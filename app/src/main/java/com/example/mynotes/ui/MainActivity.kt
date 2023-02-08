@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.example.mynotes.ui.navigation.SetupNavHost
+import com.example.mynotes.ui.screens.main.MainScreen
 import com.example.mynotes.ui.theme.MyNotesTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -37,6 +38,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DefaultPreview() {
     MyNotesTheme {
-        MainScreen()
+        MainScreen(navController= rememberNavController())
     }
 }
