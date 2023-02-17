@@ -1,11 +1,14 @@
 package com.example.mynotes.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.NavHost
-import com.example.mynotes.ui.MainScreen
+import androidx.navigation.navArgument
+import com.example.mynotes.ui.screens.add_edit.AddScreen
+import com.example.mynotes.ui.screens.detail.DetailScreen
+import com.example.mynotes.ui.screens.main.MainScreen
 
 /**
  * @author Vitaly.N on 07.02.2023.
@@ -23,13 +26,14 @@ fun SetupNavHost(navController: NavHostController) {
         startDestination = Screens.MainScreen.rout
     ) {
         composable(route = Screens.MainScreen.rout) {
-            MainScreen()
+            MainScreen(navController = navController)
         }
-        composable(route = Screens.DetailScreen.rout) {
-
+        composable(route = Screens.DetailScreen.rout + "/{id}", arguments = listOf(navArgument(
+            "id") {type = NavType.StringType})) {
+            DetailScreen(navController = navController, it.arguments?.getString("id"))
         }
         composable(route = Screens.AddScreen.rout) {
-
+            AddScreen(navController = navController)
         }
     }
 }
