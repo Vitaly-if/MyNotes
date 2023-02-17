@@ -1,13 +1,14 @@
 package com.example.mynotes.ui.screens.main
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,12 +16,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.mynotes.ui.NotesEvent
 import com.example.mynotes.ui.components.NoteItem
+import com.example.mynotes.ui.components.OrderSection
 import com.example.mynotes.ui.navigation.Screens
 import com.example.mynotes.ui.theme.MyNotesTheme
+import kotlinx.coroutines.launch
 
 /**
  * @author Vitaly.N on 07.02.2023.
@@ -29,7 +35,10 @@ import com.example.mynotes.ui.theme.MyNotesTheme
 fun MainScreen(navController: NavHostController) {
 
     val viewModel = hiltViewModel<MainViewModel>()
-    val listNotes = viewModel.notes.observeAsState(listOf()).value
+    val state = viewModel.state.value
+    val scaffoldState = rememberScaffoldState()
+    var scope = rememberCoroutineScope()
+    //val listNotes = viewModel.state.observeAsState(listOf()).value
     Scaffold(
         floatingActionButton =
         {
@@ -40,35 +49,73 @@ fun MainScreen(navController: NavHostController) {
                     contentDescription = "add Note"
                 )
             }
-        }
+        },
+        scaffoldState = scaffoldState
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            Text(
-                text = "Note",
-                fontSize = 43.sp,
-                modifier = Modifier
-                    .padding(top = 43.dp, start = 24.dp, bottom = 12.dp)
-            )
-            listNotes.forEach() { note ->
-                NoteItem(
-                    title = note.title,
-                    backgroundColor = Color(note.backgroundColor),
+            Row(modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Your note",
+                    style = MaterialTheme.typography.h4,
+                    fontSize = 43.sp,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(vertical = 12.dp)
-                        .clickable { navController.navigate(Screens.DetailScreen.rout + "/${note.id}") }
-
+                        .padding(top = 43.dp, start = 24.dp, bottom = 12.dp)
                 )
+                IconButton(onClick = { viewModel.onEvent(NotesEvent.ToggleOrderSection) }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Sort"
+                    )
+                }
+            }
+            AnimatedVisibility(
+                visible = state.isOrderSectionVisible,
+                enter = fadeIn() + slideInVertically(),
+                exit = fadeOut() + slideOutVertically()) {
+                OrderSection(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                    noteOrder = state.noteOrder,
+                    onOrderChange = {
+                        viewModel.onEvent(NotesEvent.Order(it))
+                    })
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp)) {
+                items(state.notes) { note ->
+                    NoteItem(note = note, modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            navController.navigate(Screens.DetailScreen.rout + "/${note.id}")
+                        }, onDeleteClick = {
+                        viewModel.onEvent(NotesEvent.DeleteNote(note))
+                        scope.launch {
+                            val result = scaffoldState.snackbarHostState.showSnackbar(
+                                message = "Note deleted",
+                                actionLabel = "Undo"
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                viewModel.onEvent(NotesEvent.RestoreNote)
+                            }
+                        }
+                    }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
 
         }
 
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun previewMainScreen() {
