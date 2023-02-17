@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.example.mynotes.domain.model.Note
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NoteRepositoryImpl {
@@ -13,7 +14,7 @@ interface NoteRepositoryImpl {
     suspend fun insertNote(note: Note)
 
     @Query("SELECT * FROM note")
-    suspend fun fetchAllNotes(): List<Note>
+    fun fetchAllNotes(): Flow<List<Note>>
 
     @Delete
     suspend fun deleteNote(note: Note)

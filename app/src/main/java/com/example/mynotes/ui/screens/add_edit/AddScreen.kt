@@ -1,4 +1,4 @@
-package com.example.mynotes.ui.screens.add
+package com.example.mynotes.ui.screens.add_edit
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,9 +37,9 @@ import java.util.*
  */
 @Composable
 fun AddScreen(
-    navController: NavHostController
+    navController: NavHostController,
 ) {
-    val viewModel = hiltViewModel<AddVieweModel>()
+    val viewModel = hiltViewModel<AddEditViewModel>()
     var title by rememberSaveable { mutableStateOf("") }
     var desсription by rememberSaveable { mutableStateOf("") }
     Scaffold(
@@ -82,10 +82,14 @@ fun AddScreen(
                                 Random().nextInt(256)
                             ).toArgb()
                             viewModel.addNote(
-                                Note(title = title, content = desсription, backgroundColor = color)
+                                Note(title = title,
+                                    content = desсription,
+                                    timestamp = 0L,
+                                    backgroundColor = color)
                             ) {
-                            navController.navigate(Screens.MainScreen.rout)
-                        } }
+                                navController.navigate(Screens.MainScreen.rout)
+                            }
+                        }
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,

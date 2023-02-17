@@ -6,7 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navArgument
-import com.example.mynotes.ui.screens.add.AddScreen
+import com.example.mynotes.ui.screens.add_edit.AddScreen
 import com.example.mynotes.ui.screens.detail.DetailScreen
 import com.example.mynotes.ui.screens.main.MainScreen
 
