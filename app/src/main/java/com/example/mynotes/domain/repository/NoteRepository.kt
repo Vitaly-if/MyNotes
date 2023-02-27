@@ -13,5 +13,5 @@ class NoteRepository @Inject constructor(private val noteRepositoryImpl: NoteRep
 
     suspend fun deleteNote(note: Note) = noteRepositoryImpl.deleteNote(note = note)
 
-    suspend fun fetchNote(idNote: Long) = noteRepositoryImpl.fetchNote(idNote = idNote)
+    suspend fun fetchNote(idNote: Int) = noteRepositoryImpl.fetchNote(idNote = idNote)
 }

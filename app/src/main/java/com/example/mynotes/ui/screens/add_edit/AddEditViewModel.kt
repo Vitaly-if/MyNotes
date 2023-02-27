@@ -2,10 +2,14 @@ package com.example.mynotes.ui.screens.add_edit
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.toArgb
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mynotes.domain.InvalidNoteException
 import com.example.mynotes.domain.model.Note
 import com.example.mynotes.domain.usecases.AddNoteUseCase
+import com.example.mynotes.domain.usecases.FetchNote
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -18,25 +22,103 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditViewModel @Inject constructor(
     private val addNoteUseCase: AddNoteUseCase,
+    private val fetchNote: FetchNote,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _noteTitle = mutableStateOf(NoteTextFieldState(
-        hint = "Enter title..."
-    ))
+    private val _noteTitle = mutableStateOf(
+        NoteTextFieldState(
+            hint = "Enter title..."
+        )
+    )
     val noteTitle: State<NoteTextFieldState> = _noteTitle
 
-    private val _noteContent = mutableStateOf(NoteTextFieldState(
-        hint = "Enter some content"
-    ))
+    private val _noteContent = mutableStateOf(
+        NoteTextFieldState(
+            hint = "Enter some content"
+        )
+    )
     val noteContent: State<NoteTextFieldState> = _noteContent
 
-    private val _noteColor = mutableStateOf(NoteTextFieldState())
-    val noteColor: State<NoteTextFieldState> = _noteColor
+    private val _noteColor = mutableStateOf(Note.noteColors.random().toArgb())
+    val noteColor: State<Int> = _noteColor
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    fun onEvent(event: )
+    private var currentNoteId: Int? = null
+
+    init {
+        savedStateHandle.get<Int>("note_id")?.let { noteId ->
+            if (noteId != -1)
+                viewModelScope.launch {
+                    fetchNote.invoke(noteId).also { note ->
+                        currentNoteId = note.id
+                        _noteTitle.value = noteTitle.value.copy(
+                            text = note.title,
+                            isHintVisible = false
+                        )
+                        _noteContent.value = noteContent.value.copy(
+                            text = note.content,
+                            isHintVisible = false
+                        )
+                        _noteColor.value = note.backgroundColor
+                    }
+                }
+        }
+    }
+
+    fun onEvent(event: AddEditNoteEvent) {
+        when (event) {
+            is AddEditNoteEvent.EnteredTitle -> {
+                _noteTitle.value = noteTitle.value.copy(
+                    text = event.value
+                )
+            }
+            is AddEditNoteEvent.ChangeTitleFocus -> {
+                _noteTitle.value = noteTitle.value.copy(
+                    isHintVisible = !event.focusState.isFocused &&
+                            noteTitle.value.text.isBlank()
+                )
+            }
+            is AddEditNoteEvent.EnteredContent -> {
+                _noteContent.value = noteContent.value.copy(
+                    text = event.value
+                )
+            }
+            is AddEditNoteEvent.ChangeContentFocus -> {
+                _noteContent.value = noteContent.value.copy(
+                    isHintVisible = !event.focusState.isFocused &&
+                            noteContent.value.text.isBlank()
+                )
+            }
+            is AddEditNoteEvent.ChangeColor -> {
+                _noteColor.value = event.color
+            }
+            is AddEditNoteEvent.SaveNote -> {
+                viewModelScope.launch {
+                    try {
+                        addNoteUseCase.invoke(
+                            Note(
+                                title = noteTitle.value.text,
+                                content = noteContent.value.text,
+                                timestamp = System.currentTimeMillis(),
+                                backgroundColor = noteColor.value,
+                                id = currentNoteId
+                            )
+                        )
+                        _eventFlow.emit(UiEvent.SaveNote)
+                    } catch (e: InvalidNoteException) {
+                        _eventFlow.emit(
+                            UiEvent.ShowSnackbar(
+                                message = e.message ?: "Couldn't save note"
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
 
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()

@@ -20,6 +20,6 @@ interface NoteRepositoryImpl {
     suspend fun deleteNote(note: Note)
 
     @Query("SELECT * FROM note WHERE id=:idNote")
-    suspend fun fetchNote(idNote: Long): Note
+    suspend fun fetchNote(idNote: Int): Note
 
 }

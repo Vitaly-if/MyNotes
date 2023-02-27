@@ -25,7 +25,7 @@ class DetailViewModel @Inject constructor(
         get() = _note
 
 
-    fun fetchNote(id: Long) {
+    fun fetchNote(id: Int) {
         viewModelScope.launch {
             fetchNoteUseCase.invoke(idNote = id).let {
                 _note.postValue(it)

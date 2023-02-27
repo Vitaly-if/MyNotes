@@ -9,3 +9,10 @@ val Teal200 = Color(0xFF03DAC5)
 
 val darkGray = Color(0xFF252525)
 val backgroundColor = Color(0xFFE5E5E5)
+
+val LightBlue = Color(0xFFD7E8DE)
+val RedOrange = Color(0xffffab91)
+val RedPink = Color(0xfff48fb1)
+val BabyBlue = Color(0xff81deea)
+val Violet = Color(0xffcf94da)
+val LightGreen = Color(0xffe7ed9b)

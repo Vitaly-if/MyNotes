@@ -15,7 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,7 +31,7 @@ import kotlinx.coroutines.launch
  * @author Vitaly.N on 07.02.2023.
  */
 @Composable
-fun MainScreen(navController: NavHostController) {
+fun NotesScreen(navController: NavHostController) {
 
     val viewModel = hiltViewModel<MainViewModel>()
     val state = viewModel.state.value
@@ -42,7 +41,7 @@ fun MainScreen(navController: NavHostController) {
     Scaffold(
         floatingActionButton =
         {
-            FloatingActionButton(onClick = { navController.navigate(Screens.AddScreen.rout) }) {
+            FloatingActionButton(onClick = { navController.navigate(Screens.AddEditScreen.rout) }) {
                 Icon(
                     imageVector = Icons.Filled.Add,
                     tint = Color.White,
@@ -56,9 +55,11 @@ fun MainScreen(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            Row(modifier = Modifier.fillMaxWidth(),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically) {
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "Your note",
                     style = MaterialTheme.typography.h4,
@@ -76,7 +77,8 @@ fun MainScreen(navController: NavHostController) {
             AnimatedVisibility(
                 visible = state.isOrderSectionVisible,
                 enter = fadeIn() + slideInVertically(),
-                exit = fadeOut() + slideOutVertically()) {
+                exit = fadeOut() + slideOutVertically()
+            ) {
                 OrderSection(modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
@@ -86,14 +88,16 @@ fun MainScreen(navController: NavHostController) {
                     })
             }
             Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn(modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp)) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp)
+            ) {
                 items(state.notes) { note ->
                     NoteItem(note = note, modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            navController.navigate(Screens.DetailScreen.rout + "/${note.id}")
+                            navController.navigate(Screens.AddEditScreen.rout + "?${note.id}${note.backgroundColor}")
                         }, onDeleteClick = {
                         viewModel.onEvent(NotesEvent.DeleteNote(note))
                         scope.launch {
@@ -120,7 +124,7 @@ fun MainScreen(navController: NavHostController) {
 @Composable
 fun previewMainScreen() {
     MyNotesTheme {
-        MainScreen(rememberNavController())
+        NotesScreen(rememberNavController())
     }
 }
 

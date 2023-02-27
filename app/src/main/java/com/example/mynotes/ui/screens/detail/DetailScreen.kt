@@ -38,7 +38,7 @@ fun DetailScreen(
 ) {
     val viewModel = hiltViewModel<DetailViewModel>()
     val note = viewModel.note.observeAsState().value
-    id?.toLong()?.let { viewModel.fetchNote(id = it) }
+    id?.toInt()?.let { viewModel.fetchNote(id = it) }
 
     Scaffold(
         topBar = {
@@ -75,7 +75,7 @@ fun DetailScreen(
                         .background(Color(0xFF3B3B3B))
                         .clickable {
                            viewModel.deleteNote {
-                               navController.navigate(Screens.MainScreen.rout)
+                               navController.navigateUp()
                            }
                         }
                 ) {
